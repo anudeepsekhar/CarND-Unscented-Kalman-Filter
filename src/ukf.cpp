@@ -339,61 +339,61 @@ void UKF::UpdateLidar(MeasurementPackage meas_package) {
     Zsig(1,i) = p_y; // py
   }
 
-  //UpdateUKF(meas_package,Zsig,n_z);
-   // Mmean predicted measurement
-  VectorXd z_pred = VectorXd(n_z);
-  z_pred.fill(0.0);
-  for (int i = 0; i < 2 * n_aug_ + 1; i++) {
-    z_pred = z_pred + weights_(i) * Zsig.col(i);
-  }
+  UpdateUKF(meas_package,Zsig,n_z);
+  //  // Mmean predicted measurement
+  // VectorXd z_pred = VectorXd(n_z);
+  // z_pred.fill(0.0);
+  // for (int i = 0; i < 2 * n_aug_ + 1; i++) {
+  //   z_pred = z_pred + weights_(i) * Zsig.col(i);
+  // }
 
-  // Measurement covariance matrix S
-  MatrixXd S = MatrixXd(n_z, n_z);
-  S.fill(0.0);
-  for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //2n+1 simga points
+  // // Measurement covariance matrix S
+  // MatrixXd S = MatrixXd(n_z, n_z);
+  // S.fill(0.0);
+  // for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //2n+1 simga points
 
-    //residual
-    VectorXd z_diff = Zsig.col(i) - z_pred;
+  //   //residual
+  //   VectorXd z_diff = Zsig.col(i) - z_pred;
 
-    S = S + weights_(i) * z_diff * z_diff.transpose();
-  }
+  //   S = S + weights_(i) * z_diff * z_diff.transpose();
+  // }
 
-  // Add measurement noise covariance matrix
-  MatrixXd R = MatrixXd(n_z, n_z);
-  R << std_laspx_*std_laspx_, 0,
-       0, std_laspy_*std_laspy_;
-  S = S + R;
+  // // Add measurement noise covariance matrix
+  // MatrixXd R = MatrixXd(n_z, n_z);
+  // R << std_laspx_*std_laspx_, 0,
+  //      0, std_laspy_*std_laspy_;
+  // S = S + R;
 
-  // Create matrix for cross correlation Tc
-  MatrixXd Tc = MatrixXd(n_x_, n_z);
+  // // Create matrix for cross correlation Tc
+  // MatrixXd Tc = MatrixXd(n_x_, n_z);
 
-  // Update step
+  // // Update step
 
-  // Calculate cross correlation matrix
-  Tc.fill(0.0);
-  for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //2n+1 simga points
+  // // Calculate cross correlation matrix
+  // Tc.fill(0.0);
+  // for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //2n+1 simga points
 
-    //residual
-    VectorXd z_diff = Zsig.col(i) - z_pred;
+  //   //residual
+  //   VectorXd z_diff = Zsig.col(i) - z_pred;
 
-    // state difference
-    VectorXd x_diff = Xsig_pred_.col(i) - x_;
+  //   // state difference
+  //   VectorXd x_diff = Xsig_pred_.col(i) - x_;
 
-    Tc = Tc + weights_(i) * x_diff * z_diff.transpose();
-  }
+  //   Tc = Tc + weights_(i) * x_diff * z_diff.transpose();
+  // }
 
-  // Kalman gain K;
-  MatrixXd K = Tc * S.inverse();
+  // // Kalman gain K;
+  // MatrixXd K = Tc * S.inverse();
 
-  //residual
-  VectorXd z_diff = z - z_pred;
+  // //residual
+  // VectorXd z_diff = z - z_pred;
 
-  // Calculate NIS
-  NIS_laser_ = z_diff.transpose() * S.inverse() * z_diff;
+  // // Calculate NIS
+  // NIS_laser_ = z_diff.transpose() * S.inverse() * z_diff;
 
-  // Update state mean and covariance matrix
-  x_ = x_ + K * z_diff;
-  P_ = P_ - K*S*K.transpose();
+  // // Update state mean and covariance matrix
+  // x_ = x_ + K * z_diff;
+  // P_ = P_ - K*S*K.transpose();
 }
 
 /**
@@ -427,7 +427,81 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
     Zsig(2, i) = (p_x*v1 + p_y*v2) / sqrt(p_x*p_x + p_y*p_y);  //r_dot
   }
 
-  //UpdateUKF(meas_package,Zsig,n_z);
+  UpdateUKF(meas_package,Zsig,n_z);
+
+  // //mean predicted measurement
+  // VectorXd z_pred = VectorXd(n_z);
+  // z_pred.fill(0.0);
+  // for (int i = 0; i < 2 * n_aug_ + 1; i++) {
+  //   z_pred = z_pred + weights_(i) * Zsig.col(i);
+  // }
+
+  // //measurement covariance matrix S
+  // MatrixXd S = MatrixXd(n_z, n_z);
+  // S.fill(0.0);
+  // for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //2n+1 simga points
+  //   //residual
+  //   VectorXd z_diff = Zsig.col(i) - z_pred;
+
+  //   //angle normalization
+  //   while (z_diff(1)> M_PI) z_diff(1) -= 2.*M_PI;
+  //   while (z_diff(1)<-M_PI) z_diff(1) += 2.*M_PI;
+
+  //   S = S + weights_(i) * z_diff * z_diff.transpose();
+  // }
+
+  // //add measurement noise covariance matrix
+  // MatrixXd R = MatrixXd(n_z, n_z);
+  // R << std_radr_*std_radr_,                       0,                     0,
+  //                        0, std_radphi_*std_radphi_,                     0,
+  //                        0,                       0, std_radrd_*std_radrd_;
+  // S = S + R;
+
+  // //create matrix for cross correlation Tc
+  // MatrixXd Tc = MatrixXd(n_x_, n_z);
+
+  // //calculate cross correlation matrix
+  // Tc.fill(0.0);
+  // for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //2n+1 simga points
+
+  //   //residual
+  //   VectorXd z_diff = Zsig.col(i) - z_pred;
+  //   //angle normalization
+  //   while (z_diff(1)> M_PI) z_diff(1) -= 2.*M_PI;
+  //   while (z_diff(1)<-M_PI) z_diff(1) += 2.*M_PI;
+
+  //   // state difference
+  //   VectorXd x_diff = Xsig_pred_.col(i) - x_;
+  //   //angle normalization
+  //   while (x_diff(3)> M_PI) x_diff(3) -= 2.*M_PI;
+  //   while (x_diff(3)<-M_PI) x_diff(3) += 2.*M_PI;
+
+  //   Tc = Tc + weights_(i) * x_diff * z_diff.transpose();
+  // }
+
+  // //Kalman gain K;
+  // MatrixXd K = Tc * S.inverse();
+
+  // //residual
+  // VectorXd z_diff = z - z_pred;
+
+  // //angle normalization
+  // while (z_diff(1)> M_PI) z_diff(1) -= 2.*M_PI;
+  // while (z_diff(1)<-M_PI) z_diff(1) += 2.*M_PI;
+
+  // //calculate NIS
+  // NIS_radar_ = z_diff.transpose() * S.inverse() * z_diff;
+
+  // //update state mean and covariance matrix
+  // x_ = x_ + K * z_diff;
+  // P_ = P_ - K*S*K.transpose();
+
+}
+
+void UKF::UpdateUKF(MeasurementPackage meas_package, MatrixXd Zsig, int n_z){
+
+  // Extract Measurements
+  VectorXd z = meas_package.raw_measurements_;
 
   //mean predicted measurement
   VectorXd z_pred = VectorXd(n_z);
@@ -440,41 +514,43 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
   MatrixXd S = MatrixXd(n_z, n_z);
   S.fill(0.0);
   for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //2n+1 simga points
+
     //residual
     VectorXd z_diff = Zsig.col(i) - z_pred;
-
-    //angle normalization
-    while (z_diff(1)> M_PI) z_diff(1) -= 2.*M_PI;
-    while (z_diff(1)<-M_PI) z_diff(1) += 2.*M_PI;
+    if(meas_package.sensor_type_ == MeasurementPackage::RADAR){
+      NormAng(z_diff(1));
+    }
 
     S = S + weights_(i) * z_diff * z_diff.transpose();
   }
 
-  //add measurement noise covariance matrix
-  MatrixXd R = MatrixXd(n_z, n_z);
-  R << std_radr_*std_radr_,                       0,                     0,
-                         0, std_radphi_*std_radphi_,                     0,
-                         0,                       0, std_radrd_*std_radrd_;
+  // Add measurement noise covariance matrix
+  if(meas_package.sensor_type_ == MeasurementPackage::RADAR){
+    R << R_radar_;
+  }
+  else if(meas_package.sensor_type_ == MeasurementPackage::LIDAR){
+    R << R_lidar_
+  }
   S = S + R;
 
   //create matrix for cross correlation Tc
   MatrixXd Tc = MatrixXd(n_x_, n_z);
 
-  //calculate cross correlation matrix
+
   Tc.fill(0.0);
   for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //2n+1 simga points
 
     //residual
     VectorXd z_diff = Zsig.col(i) - z_pred;
-    //angle normalization
-    while (z_diff(1)> M_PI) z_diff(1) -= 2.*M_PI;
-    while (z_diff(1)<-M_PI) z_diff(1) += 2.*M_PI;
+    if(meas_package.sensor_type_ == MeasurementPackage::RADAR){
+      NormAng(z_diff(1));
+    }
 
     // state difference
     VectorXd x_diff = Xsig_pred_.col(i) - x_;
-    //angle normalization
-    while (x_diff(3)> M_PI) x_diff(3) -= 2.*M_PI;
-    while (x_diff(3)<-M_PI) x_diff(3) += 2.*M_PI;
+    if(meas_package.sensor_type_ == MeasurementPackage::RADAR){
+      NormAng(x_diff(3));
+    }
 
     Tc = Tc + weights_(i) * x_diff * z_diff.transpose();
   }
@@ -484,89 +560,21 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
 
   //residual
   VectorXd z_diff = z - z_pred;
-
-  //angle normalization
-  while (z_diff(1)> M_PI) z_diff(1) -= 2.*M_PI;
-  while (z_diff(1)<-M_PI) z_diff(1) += 2.*M_PI;
+  if(meas_package.sensor_type_ == MeasurementPackage::RADAR){
+      NormAng(z_diff(1));
+    }
 
   //calculate NIS
-  NIS_radar_ = z_diff.transpose() * S.inverse() * z_diff;
+  if(meas_package.sensor_type_ == MeasurementPackage::RADAR){
+    NIS_radar_ = z_diff.transpose() * S.inverse() * z_diff;
+  }
+  else if(meas_package.sensor_type_ == MeasurementPackage::LIDAR){
+    NIS_laser_ = z_diff.transpose() * S.inverse() * z_diff;
+  }
+
 
   //update state mean and covariance matrix
   x_ = x_ + K * z_diff;
   P_ = P_ - K*S*K.transpose();
-
-}
-
-void UKF::UpdateUKF(MeasurementPackage meas_package, MatrixXd Zsig, int n_z){
-
-  // // Mean predicted measurement
-  // VectorXd z_pred = VectorXd(n_z);
-  // z_pred.fill(0.0);
-  // for (int i = 0; i < 2 * n_aug_ + 1; i++) {
-  //   z_pred = z_pred + weights_(i) * Zsig.col(i);
-  // }
-
-  // //measurement covariance matrix S
-  // MatrixXd S = MatrixXd(n_z, n_z);
-  // S.fill(0.0);
-  // for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //2n+1 simga points
-
-  //   //residual
-  //   VectorXd z_diff = Zsig.col(i) - z_pred;
-
-  //   // Angle normalization
-  //   NormAng(&(z_diff(1)));
-
-  //   S = S + weights_(i) * z_diff * z_diff.transpose();
-  // }
-
-  // // Add measurement noise covariance matrix
-  // MatrixXd R = MatrixXd(n_z, n_z);
-  // if (meas_package.sensor_type_ == MeasurementPackage::RADAR){ // Radar
-  //   R << R_radar_;
-  // }
-  // else if (meas_package.sensor_type_ == MeasurementPackage::LASER){ // Lidar
-  //   R << R_lidar_;
-  // }
-  // S = S + R;
-
-  // // Create matrix for cross correlation Tc
-  // MatrixXd Tc = MatrixXd(n_x_, n_z);
-  // // Calculate cross correlation matrix
-  // Tc.fill(0.0);
-  // for (int i = 0; i < 2 * n_sig_ + 1; i++) {
-  //   //residual
-  //   VectorXd z_diff = Zsig.col(i) - z_pred;
-  //   if (meas_package.sensor_type_ == MeasurementPackage::RADAR){ // Radar
-  //     // Angle normalization
-  //     NormAng(&(z_diff(1)));
-  //   }
-  //   // State difference
-  //   VectorXd x_diff = Xsig_pred_.col(i) - x_;
-  //   // Angle normalization
-  //   NormAng(&(x_diff(3)));
-  //   Tc = Tc + weights_(i) * x_diff * z_diff.transpose();
-  // }
-  // // Measurements
-  // VectorXd z = meas_package.raw_measurements_;
-  // //Kalman gain K;
-  // MatrixXd K = Tc * S.inverse();
-  // // Residual
-  // VectorXd z_diff = z - z_pred;
-  // if (meas_package.sensor_type_ == MeasurementPackage::RADAR){ // Radar
-  //   // Angle normalization
-  //   NormAng(&(z_diff(1)));
-  // }
-  // // Update state mean and covariance matrix
-  // x_ = x_ + K * z_diff;
-  // P_ = P_ - K * S * K.transpose();
-  // // Calculate NIS
-  // if (meas_package.sensor_type_ == MeasurementPackage::RADAR){ // Radar
-  // NIS_radar_ = z.transpose() * S.inverse() * z;
-  // }
-  // else if (meas_package.sensor_type_ == MeasurementPackage::LASER){ // Lidar
-  // NIS_laser_ = z.transpose() * S.inverse() * z;
-  // }
 
 }
