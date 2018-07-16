@@ -518,18 +518,19 @@ void UKF::UpdateUKF(MeasurementPackage meas_package, MatrixXd Zsig, int n_z){
     //residual
     VectorXd z_diff = Zsig.col(i) - z_pred;
     if(meas_package.sensor_type_ == MeasurementPackage::RADAR){
-      NormAng(z_diff(1));
+      NormAng(&(z_diff(1)));
     }
 
     S = S + weights_(i) * z_diff * z_diff.transpose();
   }
 
   // Add measurement noise covariance matrix
+  MatrixXd R = MatrixXd(n_z, n_z);
   if(meas_package.sensor_type_ == MeasurementPackage::RADAR){
     R << R_radar_;
   }
-  else if(meas_package.sensor_type_ == MeasurementPackage::LIDAR){
-    R << R_lidar_
+  else if(meas_package.sensor_type_ == MeasurementPackage::LASER){
+    R << R_lidar_;
   }
   S = S + R;
 
@@ -543,13 +544,13 @@ void UKF::UpdateUKF(MeasurementPackage meas_package, MatrixXd Zsig, int n_z){
     //residual
     VectorXd z_diff = Zsig.col(i) - z_pred;
     if(meas_package.sensor_type_ == MeasurementPackage::RADAR){
-      NormAng(z_diff(1));
+      NormAng(&(z_diff(1)));
     }
 
     // state difference
     VectorXd x_diff = Xsig_pred_.col(i) - x_;
     if(meas_package.sensor_type_ == MeasurementPackage::RADAR){
-      NormAng(x_diff(3));
+      NormAng(&(x_diff(3)));
     }
 
     Tc = Tc + weights_(i) * x_diff * z_diff.transpose();
@@ -561,14 +562,14 @@ void UKF::UpdateUKF(MeasurementPackage meas_package, MatrixXd Zsig, int n_z){
   //residual
   VectorXd z_diff = z - z_pred;
   if(meas_package.sensor_type_ == MeasurementPackage::RADAR){
-      NormAng(z_diff(1));
+      NormAng(&(z_diff(1)));
     }
 
   //calculate NIS
   if(meas_package.sensor_type_ == MeasurementPackage::RADAR){
     NIS_radar_ = z_diff.transpose() * S.inverse() * z_diff;
   }
-  else if(meas_package.sensor_type_ == MeasurementPackage::LIDAR){
+  else if(meas_package.sensor_type_ == MeasurementPackage::LASER){
     NIS_laser_ = z_diff.transpose() * S.inverse() * z_diff;
   }
 
