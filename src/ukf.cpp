@@ -30,7 +30,7 @@ UKF::UKF() {
 
   // Process noise standard deviation yaw acceleration in rad/s^2
   std_yawdd_ = 0.3;
-  
+
   //DO NOT MODIFY measurement noise values below these are provided by the sensor manufacturer.
   // Laser measurement noise standard deviation position1 in m
   std_laspx_ = 0.15;
@@ -47,7 +47,7 @@ UKF::UKF() {
   // Radar measurement noise standard deviation radius change in m/s
   std_radrd_ = 0.3;
   //DO NOT MODIFY measurement noise values above these are provided by the sensor manufacturer.
-  
+
   /**
   TODO:
 
@@ -106,7 +106,7 @@ void UKF::NormAng(double *ang) {
 }
 
 void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
-  if ((meas_package.sensor_type_ == MeasurementPackage::RADAR && use_radar_) || 
+  if ((meas_package.sensor_type_ == MeasurementPackage::RADAR && use_radar_) ||
      (meas_package.sensor_type_ == MeasurementPackage::LASER && use_laser_)){
 
       // Initiallization
@@ -138,12 +138,12 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
 
         }
         else if(meas_package.sensor_type_ == MeasurementPackage::RADAR && use_radar_){
-        //Convert radar from polar to cartesian coordinates and initialize state.        
+        //Convert radar from polar to cartesian coordinates and initialize state.
         float rho = meas_package.raw_measurements_[0]; // range
         float phi = meas_package.raw_measurements_[1]; // bearing
         float rho_dot = meas_package.raw_measurements_[2]; // velocity of rho
         // Coordinates convertion from polar to cartesian
-        float px = rho * cos(phi); 
+        float px = rho * cos(phi);
         float py = rho * sin(phi);
         float vx = rho_dot * cos(phi);
         float vy = rho_dot * sin(phi);
@@ -155,7 +155,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
         //Done Initializing
         is_initialized_ = true;
 
-        return; 
+        return;
       }
 
       // Prediction Step
@@ -173,7 +173,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
       }
       else if (meas_package.sensor_type_ == MeasurementPackage::RADAR){
         UpdateRadar(meas_package);
-      } 
+      }
     }
 }
 
@@ -183,7 +183,7 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
  * measurement and this one.
  */
 void UKF::Prediction(double delta_t) {
-  
+
   // Step 1: Generate Sigma Points
 
   // Create sigma points matrix
@@ -300,7 +300,7 @@ void UKF::Prediction(double delta_t) {
   }
 
   // Predict Mean
-  x_.fill(0.0);             
+  x_.fill(0.0);
   for (int i = 0; i < 2 * n_aug_ + 1; i++) {  //iterate over sigma points
     x_ = x_ + weights_(i) * Xsig_pred_.col(i);
   }
@@ -379,7 +379,7 @@ void UKF::UpdateRadar(MeasurementPackage meas_package) {
   }
 
   UpdateUKF(meas_package,Zsig,n_z);
-  
+
 }
 
 void UKF::UpdateUKF(MeasurementPackage meas_package, MatrixXd Zsig, int n_z){
@@ -414,12 +414,12 @@ void UKF::UpdateUKF(MeasurementPackage meas_package, MatrixXd Zsig, int n_z){
     R << R_lidar_;
   }
   S = S + R;
-  
+
   // Create matrix for cross correlation Tc
   MatrixXd Tc = MatrixXd(n_x_, n_z);
   // Calculate cross correlation matrix
   Tc.fill(0.0);
-  for (int i = 0; i < n_sig_; i++) { 
+  for (int i = 0; i < 2 * n_sig_ + 1; i++) {
     //residual
     VectorXd z_diff = Zsig.col(i) - z_pred;
     if (meas_package.sensor_type_ == MeasurementPackage::RADAR){ // Radar
